@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2018-04-03 Tue 12:52 -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DESCRIBE</title>
+<meta name="generator" content="Org mode">
+<meta name="author" content="Nasy [[https://nasy.moe]] &lt;Nasy&gt;">
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/readtheorg/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/readtheorg/css/readtheorg.css"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/lib/js/jquery.stickytableheaders.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/readtheorg/js/readtheorg.js"></script>
+<style type="text/css">.linenr{-webkit-user-select: none}.src{background-color:#5F72B2}</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href=""> UP </a>
+ |
+ <a accesskey="H" href="https://nasy.moe"> HOME </a>
+</div><div id="content">
+<header>
+<h1 class="title">DESCRIBE</h1>
+</header><nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgbb0531c">1. 统计论文作者数据爬虫</a>
+<ul>
+<li><a href="#orgff1a550">1.1. 数据说明</a></li>
+<li><a href="#org9c6ceba">1.2. 警告及错误说明</a></li>
+</ul>
+</li>
+<li><a href="#orgbba94c8">2. 样例</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-orgbb0531c" class="outline-2">
+<h2 id="orgbb0531c"><span class="section-number-2">1</span> 统计论文作者数据爬虫</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-orgff1a550" class="outline-3">
+<h3 id="orgff1a550"><span class="section-number-3">1.1</span> 数据说明</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+从 <a href="http://apps.webofknowledge.com">http://apps.webofknowledge.com</a> 爬取数据，按列顺序包括一下内容：
+</p>
+
+<ul class="org-ul">
+<li>文章名: <code>title</code></li>
+<li>期刊名: <code>publisher</code></li>
+<li>DOI号: <code>doi</code> (有些时候会发生没有 <code>doi</code> 的情况， <code>doi</code> 则为 <code>NO DOI</code> )</li>
+<li>出版年: <code>published</code></li>
+<li>被引次数: <code>cited</code></li>
+<li>摘要: <code>abstract</code></li>
+<li>作者关键词: <code>keywords</code></li>
+<li>作者: <code>authors</code> (根据要求，这里应该是多列，但是由于每篇文章的作者不是统一的，非常容易在下一步进行读取的时候，出现每行的列数不完全一样的错误，因此这里改为作者之间以 <code>::</code> 两个冒号进行连接，没有再使用 <code>\t</code> 进行分列)</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org9c6ceba" class="outline-3">
+<h3 id="org9c6ceba"><span class="section-number-3">1.2</span> 警告及错误说明</h3>
+<div class="outline-text-3" id="text-1-2">
+<ul class="org-ul">
+<li>由于有些时候没有 <code>DOI</code> ，此时 <code>doi</code> 为 <code>NO DOI</code> 。</li>
+<li>有些时候，虽然搜索的时候搜索到了，但它并非想要的期刊，此时其数据为 <code>Error\tqid\tdoc\t\t\t\t\t</code> 。如果这些也需要的话，我会单独给出这些错误的网页地址。</li>
+<li>在爬到倒数第三个 <code>(12). Computational Statistics &amp; Data Analysis</code> 的时候，被封 IP 了，剩余的，请参考代码自行运行爬取&#x2026;</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgbba94c8" class="outline-2">
+<h2 id="orgbba94c8"><span class="section-number-2">2</span> 样例</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+(PDF 显示不全，请看 html 版本)
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">title</th>
+<th scope="col" class="org-left">publisher</th>
+<th scope="col" class="org-left">doi</th>
+<th scope="col" class="org-left">published</th>
+<th scope="col" class="org-right">cited</th>
+<th scope="col" class="org-left">abstract</th>
+<th scope="col" class="org-left">keywords</th>
+<th scope="col" class="org-left">authors</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">History matching of a complex epidemiological model of human immunodeficiency virus transmission by using variance emulation</td>
+<td class="org-left">JOURNAL OF THE ROYAL STATISTICAL SOCIETY SERIES C</td>
+<td class="org-left">10.1111/rssc.12198</td>
+<td class="org-left">AUG 2017</td>
+<td class="org-right">39</td>
+<td class="org-left">Complex stochastic models are commonplace in epidemiology, but their utility depends on their calibration to empirical data. History matching is a (pre)calibration method that has been applied successfully to complex deterministic models. In this work, we adapt history matching to stochastic models, by emulating the variance in the model outputs, and therefore accounting for its dependence on the model's input values. The method proposed is applied to a real complex epidemiological model of human immunodeficiency virus in Uganda with 22 inputs and 18 outputs, and is found to increase the efficiency of history matching, requiring 70% of the time and 43% fewer simulator evaluations compared with a previous variant of the method. The insight gained into the structure of the human immunodeficiency virus model, and the constraints placed on it, are then discussed.</td>
+<td class="org-left">Calibration,Gaussian processes,Individual-based models,Inverse problems,Stochastic simulators</td>
+<td class="org-left">Andrianakis, I.@London Sch Hyg &amp; Trop Med, London, England::Vernon, I.@Univ Durham, Durham, England::McCreesh, N.@London Sch Hyg &amp; Trop Med, London, England::McKinley, T. J.@Univ Exeter, Exeter, Devon, England::Oakley, J. E.@Univ Sheffield, Sheffield, S Yorkshire, England::Nsubuga, R. N.@Med Res Council Uganda, Kampala, Uganda::Goldstein, M.@Univ Durham, Durham, England::White, R. G.@Univ Durham, Durham, England</td>
+</tr>
+
+<tr>
+<td class="org-left">Movers and stayers in the farming sector: accounting for unobserved heterogeneity in structural change</td>
+<td class="org-left">JOURNAL OF THE ROYAL STATISTICAL SOCIETY SERIES C</td>
+<td class="org-left">10.1111/rssc.12196</td>
+<td class="org-left">AUG 2017</td>
+<td class="org-right">34</td>
+<td class="org-left">The paper investigates whether accounting for unobserved heterogeneity in farms' size transition processes improves the representation of structural change in agriculture. Considering a mixture of two types of farm, the mover-stayer model is applied for the first time in an agricultural economics context. The maximum likelihood method and the expectation-maximization algorithm are used to estimate the model's parameters. An empirical application to a panel of French farms from 2000 to 2013 shows that the mover-stayer model outperforms the homogeneous Markov chain model in recovering the transition process and predicting the future distribution of farm sizes.</td>
+<td class="org-left">EM algorithm,Farms,Markov chain,Mover-stayer model,Structural change,Unobserved heterogeneity</td>
+<td class="org-left">Saint-Cyr, Legrand D. F.@Agrocampus Ouest, Rennes, France::Piet, Laurent@Agrocampus Ouest, Rennes, France</td>
+</tr>
+
+<tr>
+<td class="org-left">Bayesian causality test for integer-valued time series models with applications to climate and crime data</td>
+<td class="org-left">JOURNAL OF THE ROYAL STATISTICAL SOCIETY SERIES C</td>
+<td class="org-left">10.1111/rssc.12200</td>
+<td class="org-left">AUG 2017</td>
+<td class="org-right">36</td>
+<td class="org-left">We investigate the causal relationship between climate and criminal behaviour. Considering the characteristics of integer-valued time series of criminal incidents, we propose a modified Granger causality test based on the generalized auto-regressive conditional heteroscedasticity type of integer-valued time series models to analyse the relationship between the number of crimes and the temperature as an environmental factor. More precisely, we employ the Poisson, negative binomial and log-linear Poisson integer-valued generalized auto-regressive conditional heteroscedasticity models and particularly adopt a Bayesian method for our analysis. The Bayes factors and posterior probability of the null hypothesis help to determine the causality between the variables considered. Moreover, employing an adaptive Markov chain Monte Carlo sampling scheme, we estimate model parameters and initial values. As an illustration, we evaluate our test through a simulation study and, to examine whether or not temperature affects crime activities, we apply our method to data sets categorized as sexual offences, drug offences, theft of motor vehicles, and domestic-violence-related assault in Ballina, New South Wales, Australia. The result reveals that more sexual offences, drug offences and domestic-violence-related assaults occur during the summer than in other seasons of the year. This evidence strongly advocates a causal relationship between crime and temperature.</td>
+<td class="org-left">Concurrent linear relationship,Granger causality test,Markov chain Monte Carlo method,Negative binomial integer-valued generalized auto-regressive conditional heteroscedasticity model,Poisson integer-valued generalized auto-regressive conditional heteroscedasticity model,Posterior odds ratio</td>
+<td class="org-left">Chen, Cathy W. S.@Feng Chia Univ, Taichung, Taiwan::Lee, Sangyeol@Seoul Natl Univ, Seoul, South Korea</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: 2018-04-03 Tue 00:00</p>
+<p class="author">Author: Nasy <a href="https://nasy.moe">https://nasy.moe</a> &lt;Nasy&gt;</p>
+<p class="date">Created: 2018-04-03 Tue 12:52</p>
+<p class="validation"></p>
+</div>
+</body>
+</html>

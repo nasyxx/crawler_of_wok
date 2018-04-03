@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>parser.py</title>
+  <link rel="stylesheet" href="pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>parser.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      <p>Life's pathetic, have fun ("▔□▔)/hi~♡ Nasy.</p>
+<p>Excited without bugs::</p>
+<pre><code>|             *         *
+|                  .                .
+|           .
+|     *                      ,
+|                   .
+|
+|                               *
+|          |\___/|
+|          )    -(             .              '
+|         =\  -  /=
+|           )===(       *
+|          /   - \
+|          |-    |
+|         /   -   \     0.|.0
+|  NASY___\__( (__/_____(\=/)__+1s____________
+|  ______|____) )______|______|______|______|_
+|  ___|______( (____|______|______|______|____
+|  ______|____\_|______|______|______|______|_
+|  ___|______|______|______|______|______|____
+|  ______|______|______|______|______|______|_
+|  ___|______|______|______|______|______|____
+</code></pre>
+<ul>
+<li>author: Nasy https://nasy.moe <Nasy></li>
+<li>date: Apr 2, 2018</li>
+<li>email: echo bmFzeXh4QGdtYWlsLmNvbQo= | base64 -D</li>
+<li>filename: parser.py</li>
+<li>Last modified time: Apr 3, 2018</li>
+<li>license: MIT</li>
+</ul>
+<p>Parser of the crawler.</p>
+<h2>Methodology:</h2>
+<p>In a nutshell, find the <code>selector</code> and parse html to string.</p>
+<p>For <code>title</code>, <code>.title value</code>.</p>
+<p>For <code>publisher</code>, <code>.hitHilite</code>. Sometimes, <code>.hitHilite</code> will not appear. At that
+    time, the record should be droped out.</p>
+<p>For <code>doi</code>, <code>div.block-record-info-source &gt; p span ~ value</code>. Sometime, <code>doi</code>
+    will not appear. At that time, the <code>doi</code> of the record should be <code>NO DOI</code>.</p>
+<p>For <code>published</code>, same as <code>doi</code>'s.</p>
+<p>For <code>cited</code>, <code>.large-number</code>.</p>
+<p>For <code>abstract</code>, <code>div.title3 ~ p</code>.</p>
+<p>For <code>keywords</code>, <code>a[title='Find more records by this author keywords']</code>.</p>
+<p>For <code>authors</code>, first, we should find out all of the address. Second, parsing
+    the authors and their address number is significant. Finally, combine them.</p>
+<hr />
+<p>There are more things in heaven and earth, Horatio, than are dreamt.
+ --  From "Hamlet"</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">bs4</span>
+
+<span class="n">RECORD</span> <span class="o">=</span> <span class="n">NamedTuple</span><span class="p">(</span><span class="s2">&quot;RECORD&quot;</span><span class="p">,</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;publisher&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;doi&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;published&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;cited&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;abstract&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;authors&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
+<span class="p">])</span>
+
+<span class="n">re_author</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\((.+?)\)\[\s+([0-9]+).+?&quot;</span><span class="p">)</span>
+<span class="n">re_address</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\[.+?([0-9]+).+?\]\s+(.+)&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <p>Parse the html content to get title.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">parse_title</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="n">bs4</span><span class="o">.</span><span class="n">BeautifulSoup</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">return</span> <span class="n">content</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;.title value&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p>Parse the html content to get publisher infomation.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">parse_publisher</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="n">bs4</span><span class="o">.</span><span class="n">BeautifulSoup</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">return</span> <span class="n">content</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;.hitHilite&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <p>Parse the html content to get doi infomation.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">parse_doi</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="n">bs4</span><span class="o">.</span><span class="n">BeautifulSoup</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">doi_published</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;div.block-record-info-source &gt; p &quot;</span>
+                                   <span class="s2">&quot;span ~ value&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">doi_published</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">doi_published</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span>
+    <span class="k">else</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      <p>it may happened, somtimes.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Warning! NO DOI for &#39;{parse_title(content)}&#39;&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;NO DOI&quot;</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      <p>Parse the html content to get the published year.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">parse_published</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="n">bs4</span><span class="o">.</span><span class="n">BeautifulSoup</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">doi_published</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;div.block-record-info-source &gt; p &quot;</span>
+                                   <span class="s2">&quot;span ~ value&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">doi_published</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">doi_published</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">text</span>
+    <span class="k">else</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      <p>it may happened, somtimes. See <code>parse_doi</code></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">return</span> <span class="n">doi_published</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      <p>Parse the html content to get cited num.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">parse_cited_num</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="n">bs4</span><span class="o">.</span><span class="n">BeautifulSoup</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-12'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-12'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">return</span> <span class="n">content</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;.large-number&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-13'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-13'>#</a>
+      </div>
+      <p>Parse the html content to get the abstract.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">parse_abstract</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="n">bs4</span><span class="o">.</span><span class="n">BeautifulSoup</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-14'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-14'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">return</span> <span class="n">content</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;div.title3 ~ p&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
+      </div>
+      <p>Parse the html content to get keywords.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">parse_keywords</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="n">bs4</span><span class="o">.</span><span class="n">BeautifulSoup</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-16'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-16'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">return</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+            <span class="n">content</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;a[title=&#39;Find more records by &quot;</span>
+                           <span class="s2">&quot;this author keywords&#39;]&quot;</span><span class="p">)))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-17'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-17'>#</a>
+      </div>
+      <p>Parse the html content to get authors.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">parse_authors</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="n">bs4</span><span class="o">.</span><span class="n">BeautifulSoup</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-18'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-18'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">address</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">re_address</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">text</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">content</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;.fr_address_row2 a&quot;</span><span class="p">)))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-19'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-19'>#</a>
+      </div>
+      <p>Format single author and his address.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">_format_single_author</span><span class="p">(</span><span class="n">author</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-20'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-20'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">return</span> <span class="s2">&quot;@&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">author</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">address</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">author</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;Unknow&quot;</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="s2">&quot;::&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="nb">map</span><span class="p">(</span><span class="n">_format_single_author</span><span class="p">,</span>
+            <span class="n">re_author</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span>
+                <span class="n">content</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;div.block-record-info &quot;</span>
+                               <span class="s2">&quot;&gt; p &quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-21'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-21'>#</a>
+      </div>
+      <p>Parse the html content.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="n">bs4</span><span class="o">.</span><span class="n">BeautifulSoup</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RECORD</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-22'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-22'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">return</span> <span class="n">RECORD</span><span class="p">(</span>
+        <span class="n">parse_title</span><span class="p">(</span><span class="n">content</span><span class="p">),</span>
+        <span class="n">parse_publisher</span><span class="p">(</span><span class="n">content</span><span class="p">),</span>
+        <span class="n">parse_doi</span><span class="p">(</span><span class="n">content</span><span class="p">),</span>
+        <span class="n">parse_published</span><span class="p">(</span><span class="n">content</span><span class="p">),</span>
+        <span class="n">parse_cited_num</span><span class="p">(</span><span class="n">content</span><span class="p">),</span>
+        <span class="n">parse_abstract</span><span class="p">(</span><span class="n">content</span><span class="p">),</span>
+        <span class="n">parse_keywords</span><span class="p">(</span><span class="n">content</span><span class="p">),</span>
+        <span class="n">parse_authors</span><span class="p">(</span><span class="n">content</span><span class="p">),</span>
+    <span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;test/test.html&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">bs4</span><span class="o">.</span><span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="s2">&quot;lxml&quot;</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">parse</span><span class="p">(</span><span class="n">content</span><span class="p">)</span> <span class="o">==</span> <span class="n">RECORD</span><span class="p">(</span>
+        <span class="n">title</span> <span class="o">=</span>
+        <span class="s1">&#39;Bayesian inference for generalized stochastic population growth &#39;</span>
+        <span class="s1">&#39;models with application to aphids&#39;</span><span class="p">,</span>
+        <span class="n">publisher</span> <span class="o">=</span> <span class="s1">&#39;JOURNAL OF THE ROYAL STATISTICAL SOCIETY SERIES C&#39;</span><span class="p">,</span>
+        <span class="n">doi</span> <span class="o">=</span> <span class="s1">&#39;10.1111/j.1467-9876.2009.00696.x&#39;</span><span class="p">,</span>
+        <span class="n">published</span> <span class="o">=</span> <span class="s1">&#39;2010&#39;</span><span class="p">,</span>
+        <span class="n">cited</span> <span class="o">=</span> <span class="s1">&#39;28&#39;</span><span class="p">,</span>
+        <span class="n">abstract</span> <span class="o">=</span>
+        <span class="s1">&#39;We analyse the effects of various treatments on cotton aphids (Aphis &#39;</span>
+        <span class="s1">&#39;gossypii). The standard analysis of count data on cotton aphids &#39;</span>
+        <span class="s1">&#39;determines parameter values by assuming a deterministic growth model &#39;</span>
+        <span class="s1">&#39;and combines these with the corresponding stochastic model to make &#39;</span>
+        <span class="s1">&#39;predictions on population sizes, depending on treatment. Here, we &#39;</span>
+        <span class="s1">&#39;use an integrated stochastic model to capture the intrinsic &#39;</span>
+        <span class="s1">&#39;stochasticity, of both observed aphid counts and unobserved &#39;</span>
+        <span class="s1">&#39;cumulative population size for all treatment combinations &#39;</span>
+        <span class="s1">&#39;simultaneously. Unlike previous approaches, this allows us to &#39;</span>
+        <span class="s1">&#39;explore explicitly and more accurately to assess treatment &#39;</span>
+        <span class="s1">&#39;interactions. Markov chain Monte Carlo methods are used within a &#39;</span>
+        <span class="s1">&#39;Bayesian framework to integrate over uncertainty that is associated &#39;</span>
+        <span class="s1">&#39;with the unobserved cumulative population size and estimate &#39;</span>
+        <span class="s1">&#39;parameters. We restrict attention to data on aphid counts in the &#39;</span>
+        <span class="s1">&#39;Texas High Plains obtained for three different levels of irrigation &#39;</span>
+        <span class="s1">&#39;water, nitrogen fertilizer and block, but we note that the methods &#39;</span>
+        <span class="s1">&#39;that we develop can be applied to a wide range of problems in &#39;</span>
+        <span class="s1">&#39;population ecology.&#39;</span><span class="p">,</span>
+        <span class="n">keywords</span> <span class="o">=</span>
+        <span class="s1">&#39;Cotton aphid,Markov chain Monte Carlo methods,Markov jump process,&#39;</span>
+        <span class="s1">&#39;Moment closure approximation&#39;</span><span class="p">,</span>
+        <span class="n">authors</span> <span class="o">=</span>
+        <span class="s1">&#39;Gillespie, Colin S.@Univ Newcastle, Sch Math &amp; Stat, Newcastle Upon &#39;</span>
+        <span class="s1">&#39;Tyne NE1 7RU, Tyne &amp; Wear, England&#39;</span><span class="p">)</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

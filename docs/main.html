@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>main.py</title>
+  <link rel="stylesheet" href="pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>main.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      <p>Life's pathetic, have fun ("▔□▔)/hi~♡ Nasy.</p>
+<p>Excited without bugs::</p>
+<pre><code>|             *         *
+|                  .                .
+|           .
+|     *                      ,
+|                   .
+|
+|                               *
+|          |\___/|
+|          )    -(             .              '
+|         =\  -  /=
+|           )===(       *
+|          /   - \
+|          |-    |
+|         /   -   \     0.|.0
+|  NASY___\__( (__/_____(\=/)__+1s____________
+|  ______|____) )______|______|______|______|_
+|  ___|______( (____|______|______|______|____
+|  ______|____\_|______|______|______|______|_
+|  ___|______|______|______|______|______|____
+|  ______|______|______|______|______|______|_
+|  ___|______|______|______|______|______|____
+</code></pre>
+<ul>
+<li>author: Nasy https://nasy.moe <Nasy></li>
+<li>date: Apr 2, 2018</li>
+<li>email: echo bmFzeXh4QGdtYWlsLmNvbQo= | base64 -D</li>
+<li>filename: main.py</li>
+<li>Last modified time: Apr 3, 2018</li>
+<li>license: MIT</li>
+</ul>
+<p>A crawler that crawl the data from http://apps.webofknowledge.com .</p>
+<h2>Methodology:</h2>
+<p>To easily crawl it, what is the prioritized is that we need to find out a
+    universal link, though it is so hard! we tried to parse the urls and found
+    that it use qid and doc to portray the full result of every single paper of
+    a Journal. Further, we noticed there is a useful search history list, where
+    we could easily figure out our waiting-crawling paper qid and the count of
+    docs.</p>
+<p>Last but not the least, parse it and finished.</p>
+<p>See the methodology of parser in <code>parser.py</code></p>
+<hr />
+<p>There are more things in heaven and earth, Horatio, than are dreamt.
+ --  From "Hamlet"</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">multiprocessing.dummy</span> <span class="kn">import</span> <span class="n">Pool</span>
+<span class="kn">from</span> <span class="nn">parser</span> <span class="kn">import</span> <span class="n">RECORD</span><span class="p">,</span> <span class="n">parse</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">bs4</span>
+<span class="kn">import</span> <span class="nn">requests</span> <span class="kn">as</span> <span class="nn">req</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <p>Type alias</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">QID</span> <span class="o">=</span> <span class="nb">int</span>
+<span class="n">DOC</span> <span class="o">=</span> <span class="nb">int</span>
+<span class="n">JURNAL</span> <span class="o">=</span> <span class="n">NamedTuple</span><span class="p">(</span><span class="s2">&quot;JURNAL&quot;</span><span class="p">,</span> <span class="p">[(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;count&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;qid&quot;</span><span class="p">,</span> <span class="n">QID</span><span class="p">)])</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      <p>Jurnals</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">JURNAL_LIST</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\n\([0-9]+\)\. (.+)&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">(1). Annals of Statistics::1652</span>
+<span class="s2">(2). Journal of the American Statistical Association::2138</span>
+<span class="s2">(3). Journal of the Royal Statistical Society: Series B::87</span>
+<span class="s2">(4). Biometrika::1187</span>
+<span class="s2">(5). Biometrics::2130</span>
+<span class="s2">(6). Journal of the Royal Statistical Society: Series A::121</span>
+<span class="s2">(7). Econometrica::940</span>
+<span class="s2">(8). Journal of Computational and Graphical Statistics::863</span>
+<span class="s2">(9). Journal of Multivariate Analysis::2225</span>
+<span class="s2">(10). Journal of the Royal Statistical Society: Series C::86</span>
+<span class="s2">(11). Journal of Statistical Software::886</span>
+<span class="s2">(12). Computational Statistics &amp; Data Analysis::4027</span>
+<span class="s2">(13). Journal of Business &amp; Economic Statistics::699</span>
+<span class="s2">(14). Journal of Econometrics::2086</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="n">JURNALS</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;::&quot;</span><span class="p">),</span> <span class="n">JURNAL_LIST</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p>NOTE(Nasy): <code>3</code> is for my search history, change to yours.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">URL</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;http://apps.webofknowledge.com/full_record.do?product=UA&amp;search_mode=Gen&quot;</span>
+    <span class="s2">&quot;eralSearch&amp;qid={qid}&amp;SID=7BTagtKnmliEPhll9jz&amp;doc={d}#searchErrorMessage&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      <p>Convert jurnal to NamedTuple JURNAL.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">jurnal2nt_jurnal</span><span class="p">(</span><span class="n">jurnal</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">JURNAL</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <p>Args:
+    jurnal: <code>Tuple[int, List[str]]</code>, a jurnal parsed from <code>JURNAL_LIST</code>.</p>
+<p>Return:
+    jurnal: A <code>JURNAL</code>.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">return</span> <span class="n">JURNAL</span><span class="p">(</span><span class="n">jurnal</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">jurnal</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]),</span> <span class="n">jurnal</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      <p>Crawl one jurnal page.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">crawler_one</span><span class="p">(</span><span class="n">qid_doc</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">QID</span><span class="p">,</span> <span class="n">DOC</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">RECORD</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      <p>Args:
+    jqid_doc: <code>Tuple[QID, DOC]</code>, a qid and a doc waiting to crawl.</p>
+<p>Return:
+    jurnal: A <code>JURNAL</code> record.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">qid</span><span class="p">,</span> <span class="n">doc</span> <span class="o">=</span> <span class="n">qid_doc</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">URL</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">qid</span> <span class="o">=</span> <span class="n">qid</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">doc</span><span class="p">))</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">bs4</span><span class="o">.</span><span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="s2">&quot;lxml&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">parse</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">qid</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="s2">&quot;!ERROR!&quot;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Finally&quot;</span><span class="p">,</span> <span class="n">qid</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="s2">&quot;!!ERROR!!&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">RECORD</span><span class="p">(</span><span class="s2">&quot;Error&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">qid</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">doc</span><span class="p">),</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      <p>Crawl the jurnal pages.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">crawler</span><span class="p">(</span><span class="n">jurnal</span><span class="p">:</span> <span class="n">JURNAL</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">pool</span> <span class="o">=</span> <span class="n">Pool</span><span class="p">()</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">crawler_one</span><span class="p">,</span>
+                       <span class="p">((</span><span class="n">jurnal</span><span class="o">.</span><span class="n">qid</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">jurnal</span><span class="o">.</span><span class="n">count</span><span class="p">)))</span>
+    <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;data/&quot;</span> <span class="o">+</span> <span class="n">jurnal</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;.tsv&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">)))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      <p>Test a single one normal.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">test_normal</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
+            <span class="s2">&quot;./test/Journal of the Royal Statistical Society: Series C.tsv&quot;</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span>
+            <span class="s2">&quot;./data/Journal of the Royal Statistical Society: Series C.tsv&quot;</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">o</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span> <span class="o">==</span> <span class="n">o</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Test passed&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-12'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-12'>#</a>
+      </div>
+      <p>Test a single one.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">test_full</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-13'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-13'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">crawler</span><span class="p">(</span>
+        <span class="n">jurnal2nt_jurnal</span><span class="p">(</span>
+            <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;Journal of the Royal Statistical Society: Series C&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;86&#39;</span><span class="p">])))</span>
+    <span class="n">test_normal</span><span class="p">()</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-14'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-14'>#</a>
+      </div>
+      <p>Yoooo, the main function.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">for</span> <span class="n">jurnal</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span><span class="n">jurnal2nt_jurnal</span><span class="p">,</span> <span class="n">JURNALS</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="o">*</span><span class="n">jurnal</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">crawler</span><span class="p">(</span><span class="n">jurnal</span><span class="p">)</span>
+    <span class="n">test_normal</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

@@ -1,0 +1,5 @@
+./.mypy_cache/*
+./.ropeproject/*
+*.synctex.gz
+DESCRIBE.org
+DESCRIBE.tex
